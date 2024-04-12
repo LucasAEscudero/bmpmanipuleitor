@@ -1,0 +1,26 @@
+# depslib dependency file v1.0
+1712571230 source:/home/ezequiel/Progra/BMP/bmpmanipuleitor/main.c
+	<stdio.h>
+	"funciones_estudiante.h"
+	"funciones_docente.h"
+	"constantes.h"
+
+1712621035 /home/ezequiel/Progra/BMP/bmpmanipuleitor/funciones_docente.h
+	"estructuras.h"
+
+1712621994 source:/home/ezequiel/Progra/BMP/bmpmanipuleitor/funciones_docente.c
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	"estructuras.h"
+	"constantes.h"
+	"funciones_docente.h"
+
+1712539850 source:/home/ezequiel/Progra/BMP/bmpmanipuleitor/funciones_estudiante.c
+
+1712539559 /home/ezequiel/Progra/BMP/bmpmanipuleitor/funciones_estudiante.h
+
+1712591837 /home/ezequiel/Progra/BMP/bmpmanipuleitor/estructuras.h
+
+1712541473 /home/ezequiel/Progra/BMP/bmpmanipuleitor/constantes.h
+
