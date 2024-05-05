@@ -15,7 +15,7 @@
 // invertir los colores de la imagen
 
 #define ESCALA_DE_GRISES "--escala-de-grises"
-// deberï¿½ promediar los valores de cada color RGB y transformarlo a gris
+// deberá promediar los valores de cada color RGB y transformarlo a gris
 
 #define AUMENTAR_CONTRASTE "--aumentar-contraste"
 // aumenta el contraste en un 25%
@@ -33,9 +33,9 @@
 // aumenta en un 50% la intensidad del color rojo
 
 #define RECORTAR "--recortar"
-// reduce el tamaï¿½o de la imagen al 50%, sin cambiar sus proporciones,
-//sï¿½lamente descarta lo que exceda ese tamaï¿½o. Por ejemplo: una imagen de 1000px x
-//500px, deberï¿½ mantener todos los pï¿½xeles que estï¿½n entre 0 y 499 en el eje X y entre 0 y
+// reduce el tamaño de la imagen al 50%, sin cambiar sus proporciones,
+//sólamente descarta lo que exceda ese tamaño. Por ejemplo: una imagen de 1000px x
+//500px, deberá mantener todos los píxeles que estén entre 0 y 499 en el eje X y entre 0 y
 //249 el eje Y.
 
 #define ROTAR_DERECHA "--rotar-derecha"

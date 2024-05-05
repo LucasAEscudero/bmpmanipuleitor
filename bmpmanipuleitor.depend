@@ -24,22 +24,24 @@
 
 1712541473 /home/ezequiel/Progra/BMP/bmpmanipuleitor/constantes.h
 
-1713197688 source:c:\users\lucas escudero\desktop\bmpmanipuleitor\main.c
+1714936925 source:c:\users\lucas escudero\documents\tp_20241c_jueves\bmpmanipuleitor\funciones_estudiante.c
+	<assert.h>
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	"constantes.h"
+	"funciones_estudiante.h"
+
+1712885898 source:c:\users\lucas escudero\documents\tp_20241c_jueves\bmpmanipuleitor\main.c
 	<stdio.h>
 	"funciones_estudiante.h"
 	"constantes.h"
 
-1713198337 c:\users\lucas escudero\desktop\bmpmanipuleitor\funciones_estudiante.h
+1714936955 c:\users\lucas escudero\documents\tp_20241c_jueves\bmpmanipuleitor\funciones_estudiante.h
 	"estructuras.h"
 	<stdio.h>
 
-1713197935 c:\users\lucas escudero\desktop\bmpmanipuleitor\estructuras.h
+1713138162 c:\users\lucas escudero\documents\tp_20241c_jueves\bmpmanipuleitor\constantes.h
 
-1713197895 c:\users\lucas escudero\desktop\bmpmanipuleitor\constantes.h
-
-1713198324 source:c:\users\lucas escudero\desktop\bmpmanipuleitor\funciones_estudiante.c
-	<string.h>
-	<stdio.h>
-	"constantes.h"
-	"funciones_estudiante.h"
+1714672837 c:\users\lucas escudero\documents\tp_20241c_jueves\bmpmanipuleitor\estructuras.h
 

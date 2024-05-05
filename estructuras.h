@@ -17,7 +17,7 @@ typedef struct
     unsigned short profundidad;
 }t_metadata;
 
-typedef struct
+/*typedef struct
 {
   char* comandos[6];
   int cantComandos;
@@ -25,7 +25,7 @@ typedef struct
   int sinNombreDeArchivo;
   char* errores[6];
   int cantErrores;
-} t_parametrosConsola;
+} t_parametrosConsola;*/
 
 
 #endif // ESTRUCTURAS_H_INCLUDED

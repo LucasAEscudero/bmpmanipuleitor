@@ -1,5 +1,5 @@
 /*
-    Integrantes del grupo. En caso de ser un grupo de dos integrantes, no completar el ï¿½ltimo campo.
+    Integrantes del grupo. En caso de ser un grupo de dos integrantes, no completar el último campo.
     Si alguno de los integrantes del grupo dejara la materia, completar de todos modos sus datos, aclarando que no entrega.
     -----------------
     Apellido:
@@ -12,7 +12,7 @@
     DNI:
     Entrega:
     -----------------
-    (Solo para grupos de tres integrantes)
+    (Sólo para grupos de tres integrantes)
     Apellido:
     Nombre:
     DNI:
@@ -22,338 +22,816 @@
     Comentarios (opcionales) que deseen hacer al docente sobre el TP:
 
 */
+#include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "constantes.h"
 #include "funciones_estudiante.h"
 
-void solucion(int argc, char* argv[])
-{
-  t_parametrosConsola param;
+#define TAM_MAXIMO_HEDER_BMP  256
+#define PIXEL_24  3l
+#define RED 2
+#define GREEN 1
+#define BLUE 0
 
-  validarParametrosConsola(argc,argv,&param);
+#define LOG 1
 
-  if(param.sinNombreDeArchivo || !param.cantComandos)
-    return;
+/*
+#define TODO_OK 0
+#define ARCHIVO_NO_ENCONTRADO 10
+#define NO_SE_PUEDE_CREAR_ARCHIVO 20
+*/
 
-  procesarImagen(&param);
-}
+#define SIN_NOMBRE_DE_ARCHIVO 30
+#define SIN_COMANDOS 40
+#define FORMATO_DE_ARCHIVO_INVALIDO 50
+#define INICIO_ARCHIVO 0l
+
+
+/** MODELO **/
 
 ////////////////////////////////////////////////////////////////////////////////
-//             array de comandos y array funciones por camando
+//             array comando y array funciones por camando
 ////////////////////////////////////////////////////////////////////////////////
+
 const char comandosValidos[CANTIDAD_COMANDOS][TAMANIO_MAXIMO_COMANDO] =
 {
-  NEGATIVO,
-  ESCALA_DE_GRISES,
-  AUMENTAR_CONTRASTE,
-  REDUCIR_CONTRASTE,
-  TONALIDAD_AZUL,
-  TONALIDAD_ROJO,
-  TONALIDAD_VERDE,
-  RECORTAR,
-  ROTAR_DERECHA,
-  ROTAR_IZQUIERDA,
-  COMODIN
-
+    NEGATIVO,
+    ESCALA_DE_GRISES,
+    AUMENTAR_CONTRASTE,
+    REDUCIR_CONTRASTE,
+    TONALIDAD_AZUL,
+    TONALIDAD_ROJO,
+    TONALIDAD_VERDE,
+    RECORTAR,
+    ROTAR_DERECHA,
+    ROTAR_IZQUIERDA,
+    COMODIN
 };
+
 
 
 Accion vectorAccion[CANTIDAD_COMANDOS] =
 {
-  &negativo,
-  &escalaDeGrises,
-  &aumentarContraste,
-  &reducirContraste,
-  &tonalidadAzul,
-  &tonalidadRojo,
-  &tonalidadVerde,
-  &recortar,
-  &rotarDerecha,
-  &rotarIzquierda,
-  &comodin,
+    &negativo,
+    &escalaDeGrises,
+    &aumentarContraste,
+    &reducirContraste,
+    &tonalidadAzul,
+    &tonalidadRojo,
+    &tonalidadVerde,
+    &recortar,
+    &rotarDerecha,
+    &rotarIzquierda,
+    &comodin
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// 	funcionalidades a implementar
-////////////////////////////////////////////////////////////////////////////////
 
-void negativo(t_metadata* heder, FILE* img)
+/** VISTA **/
+
+int solucion(int argc, char* argv[])
 {
-    printf("\n Negativo sin implementar");
+    t_parametrosConsola param;
+
+    extraerParametrosConsola(argc,argv,&param);
+
+    if(param.esHelp)
+        mostrarAyuda();
+
+    if(param.cantErrores > 0)
+        mostrarErrores(&param);
+
+    if(param.sinNombreDeArchivo)
+        return SIN_NOMBRE_DE_ARCHIVO ;
+
+    if(param.cantComandos == 0)
+        return SIN_COMANDOS ;
+
+    return procesarImagen(&param);
 }
 
-void escalaDeGrises(t_metadata* heder, FILE* img)
+void mostrarErrores(t_parametrosConsola* param)
 {
-  printf("\n Escala de grises sin implementar.\n");
-}
-void aumentarContraste(t_metadata* heder, FILE* img)
-{
-  printf("\n Aumentar contraste sin implementar.\n");
-}
-void reducirContraste(t_metadata* heder, FILE* img)
-{
-  printf("\n Reducir contraste sin implementar.\n");
-}
-void tonalidadAzul(t_metadata* heder, FILE* img)
-{
-  FILE *newImg = fopen("estudiante-tonalidad-azul.bmp", "wb");
-
-  if(newImg == NULL) {
-    printf("Error al crear el archivo estudiante-tonalidad-azul.bmp \n");
-    return ;
-  }
-
-    reescribirHeader(img, newImg);
-
-    aumentarTonalidad(img, newImg, "blue");
-
-    fclose(newImg);
+    printf("\n Argumentos erroneos.\n");
+    printf("  Comandos:\n");
+    int indice;
+    for(indice=0; indice<param->cantErrores; indice++)
+    {
+        printf("   %s\n", param->errores[indice]);
+    }
 }
 
-void tonalidadRojo(t_metadata* heder, FILE* img)
+void mostrarAyuda()
 {
-  FILE *newImg = fopen("estudiante-tonalidad-roja.bmp", "wb");
-
-  if(newImg == NULL) {
-    printf("Error al crear el archivo estudiante-tonalidad-roja.bmp \n");
-    return ;
-  }
-
-    reescribirHeader(img, newImg);
-
-    aumentarTonalidad(img, newImg, "red");
-
-    fclose(newImg);
-}
-
-void tonalidadVerde(t_metadata* heder, FILE* img)
-{
-  FILE *newImg = fopen("estudiante-tonalidad-verde.bmp", "wb");
-
-  if(newImg == NULL) {
-    printf("Error al crear el archivo estudiante-tonalidad-verde.bmp \n");
-    return ;
-  }
-
-    reescribirHeader(img, newImg);
-
-    aumentarTonalidad(img, newImg, "green");
-
-    fclose(newImg);
-}
-
-void recortar(t_metadata* heder, FILE* img)
-{
-  printf("\n Recortar sin implementar.\n");
-}
-void rotarDerecha(t_metadata* heder, FILE* img)
-{
-  printf("\n Rotar derecha sin implementar.\n");
-}
-void rotarIzquierda(t_metadata* heder, FILE* img)
-{
-  printf("\n Rotar izquierda sin implementar.\n");
-}
-void comodin(t_metadata* heder, FILE* img)
-{
-  printf("\n Comodin sin implementar.\n");
+    printf("\n Manipulador de imagens bmp.\n");
+    printf("  Comandos:\n");
+    int indice;
+    for(indice=0; indice<CANTIDAD_COMANDOS; indice++)
+    {
+        printf("   %s\n", comandosValidos[indice]);
+    }
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//             Validacion de parametros de entrada por consola
+///       Servicio de Validacion de parametros de entrada por consola
 ////////////////////////////////////////////////////////////////////////////////
-t_parametrosConsola* validarParametrosConsola(
-  int argc,
-  char* argv[],
-  t_parametrosConsola* parametros)
+
+t_parametrosConsola* extraerParametrosConsola(
+    int argc,
+    char* argv[],
+    t_parametrosConsola* parametros)
 {
-  parametros->cantComandos = 0;
-  parametros->sinNombreDeArchivo = true;
-  parametros->cantErrores = 0;
+    parametros->cantComandos = 0;
+    parametros->sinNombreDeArchivo = true;
+    parametros->cantErrores = 0;
+    parametros->esHelp = false;
 
+    int i;
 
-  int i;
-  for(i = 1; i < argc; i++)
-  {
-
-    if(esComandoValido(argv[i]))
+    for(i = 1; i < argc; i++)
     {
-      parametros->comandos[parametros->cantComandos] = argv[i];
-      parametros->cantComandos++;
+        if(!parametros->esHelp && strcmp(HELP,argv[i]) == 0)
+        {
+            parametros->esHelp = true;
+            continue;
+        }
+
+        if( parametros->sinNombreDeArchivo && esNombreArchivoValido(argv[i]))
+        {
+            parametros->nombreArchivo[0] = argv[i];
+            parametros->sinNombreDeArchivo = false;
+            continue;
+        }
+
+        if( parametros->cantComandos < CANTIDAD_COMANDOS && esComandoValido(argv[i]))
+        {
+            parametros->comandos[parametros->cantComandos] = argv[i];
+            parametros->cantComandos++;
+            continue;
+        }
+        if( parametros->cantErrores < MAX_ERRORES_GUARDADOS)
+        {
+            parametros->errores[parametros->cantErrores] = argv[i];
+            parametros->cantErrores++;
+        }
     }
 
-    else if(
-      parametros->sinNombreDeArchivo
-      && esNombreArchivoValido(argv[i]))
-    {
-      parametros->nombreArchivo[0] = argv[i];
-      parametros->sinNombreDeArchivo = false;
-    }
-    else
-    {
-      parametros->errores[parametros->cantErrores] = argv[i];
-      parametros->cantErrores++;
-    }
-  }
-
-  return parametros;
+    return parametros;
 }
 
 int esComandoValido(char* comando)
 {
-  int i;
-
-  for(i=0; i<CANTIDAD_COMANDOS; i++)
-  {
-    if( strcmp(comando,comandosValidos[i])== 0)
-      return true;
-  }
-
-  return false;
+    int i;
+    for(i=0; i<CANTIDAD_COMANDOS; i++)
+    {
+        if(strcmp(comando,comandosValidos[i])== 0)
+            return true;
+    }
+    return false;
 }
 
 int esNombreArchivoValido(char* nombre)
 {
-  int len = strlen(nombre);
+    int len = strlen(nombre);
 
-  return len > 4
-         && nombre[len-1] == 'p'
-         && nombre[len-2] == 'm'
-         && nombre[len-3] == 'b'
-         && nombre[len-4] == '.' ;
+    return strlen(nombre) > 4 &&
+           nombre[len-1] == 'p' &&
+           nombre[len-2] == 'm' &&
+           nombre[len-3] == 'b' &&
+           nombre[len-4] == '.' ;
+}
+
+/** CONTROLADOR **/
+
+////////////////////////////////////////////////////////////////////////////////
+///       Servicio validacion formato del archivo y extraccion de metadata
+////////////////////////////////////////////////////////////////////////////////
+int esTipoArchivoBMP(FILE* img)
+{
+    assert(img);
+
+    char tipo[2];
+    fseek(img,0l,SEEK_SET);
+    fread(tipo,2l,1,img);
+
+    return tipo[0] =='B' && tipo[1] =='M';
+}
+
+int extraerHeder(t_metadata* heder,FILE* img)
+{
+    assert(img && heder);
+    logString(" Extrayendo cebacera... \n");
+
+    fseek(img, 0l, SEEK_END);
+    if( ftell(img) < TAM_MAXIMO_HEDER_BMP)
+        return false;
+
+    // tipo 2 byts
+    fseek(img,2l,SEEK_SET);
+    // tamaño archivo
+    fread(&heder->tamArchivo,sizeof(int),1l,img);
+    // reservado
+    fseek(img,sizeof(int),SEEK_CUR);
+    // inicio datos imagen
+    fread(&heder->comienzoImagen,sizeof(int),1l,img);
+    // tamaño cabecera bitmap
+    fread(&heder->tamEncabezado,sizeof(int),1l,img);
+    // anchura
+    fread(&heder->ancho,sizeof(int),1l,img);
+    // altura
+    fread(&heder->alto,sizeof(int),1l,img);
+    // numero de planos
+    fread(&heder->profundidad,sizeof(short),1l,img);
+
+    //mostrarHeder(heder);
+    return true;
+}
+
+int esTamnioPixel24bist(t_metadata* heder, FILE* img)
+{
+    assert(img && heder);
+
+    fseek(img,heder->comienzoImagen,SEEK_SET);
+
+    unsigned long bytesInicioImg = ftell(img);
+
+    fseek(img,0l,SEEK_END);
+
+    unsigned long bytesArchivo = ftell(img);
+
+
+    int esTamanioCorrecto =
+        bytesArchivo - bytesInicioImg == heder->alto * heder->ancho * PIXEL_24;
+
+    return esTamanioCorrecto;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//            funciones para el control del flujo de ejecucion
+///            Controlador del proceso de generacion de imagenes
 ////////////////////////////////////////////////////////////////////////////////
-
-void procesarImagen(t_parametrosConsola* param)
+int procesarImagen(t_parametrosConsola* param)
 {
-  consoleLog("Inicia proceso.....");
-  FILE* img;
+    logString("\nInicia proceso.....\n");
 
-  img = fopen(param->nombreArchivo[0], "rb");// "wb+"
-  if(!img)
-  {
-    consoleLog("Error abriendo archivo...Fin proceso");
-    return;
-  }
+    FILE* img;
+    img = fopen(param->nombreArchivo[0], "rb");
 
-  t_metadata heder;
+    if(!img)
+    {
+        logString("Error abriendo archivo...Fin proceso.");
+        return ARCHIVO_NO_ENCONTRADO; // ERROR_ABRIENDO_ARCHIVO
+    }
 
-  if(!extraerHeder(&heder, img))
-  {
-    consoleLog("Error al extraer el heder...Fin proceso");
-    return ;
-  }
+    if(!esTipoArchivoBMP(img))
+    {
+        logString("Error tipo de archivo incorrecto...Fin proceso.");
+        return FORMATO_DE_ARCHIVO_INVALIDO; // ERROR_TIPO_ARCHIVO
+    }
 
-  if(img)
-    printf("\nSe abrio la imagen");
+    t_metadata heder;
 
+    if(!extraerHeder(&heder, img))
+    {
+        logString("Error al extraer el heder...Fin proceso.");
+        return FORMATO_DE_ARCHIVO_INVALIDO; // ERROR_TIPO_ARCHIVO
+    }
+    if(!esTamnioPixel24bist(&heder, img))
+    {
+        logString("Error tipo de archivo no es pixel 24 bits...Fin proceso.");
+        return  FORMATO_DE_ARCHIVO_INVALIDO; // ERROR_TIPO_ARCHIVO
+    }
 
-  generadorManager(param,&heder,img);
+    int erroresALGenerarArchivos = generadorManager(param,&heder,img);
 
-  fclose(img);
+    fclose(img);
 
-  consoleLog("\nFin proceso.....");
+    logString("\nFin proceso.");
+
+    return !erroresALGenerarArchivos ? TODO_OK : erroresALGenerarArchivos;
 }
 
-int extraerHeder(t_metadata* h, FILE* pf)
+/// generador de archivos tranformados
+int generadorManager(t_parametrosConsola* param, t_metadata*heder, FILE* img)
 {
-  consoleLog("Extraer heder sin implementar \n");
+    int i;
+    int indiceAccion;
+    int error = 0;
 
-    //comprobar que sea del tipo fichero 'BM'
-    if(fgetc(pf) == 'B' && fgetc(pf) == 'M')
-        printf("Se detecto el tipo de fichero 'BM' \n");
+    for(i=0; i<param->cantComandos; i++)
+    {
+        indiceAccion = accionIndexOf(param->comandos[i]);
+        if(indiceAccion != -1)
+            error = vectorAccion[indiceAccion](heder, img);
+        else
+            logString("no existe accion para este comando.");
+    }
 
-    fread(&h->tamArchivo, 4, 1, pf);
-    printf("Tamanio de archivo: %d bytes\n", h->tamArchivo);
-
-    fseek(pf, 4, SEEK_CUR); //espacio RESERVADO, el cursor se desplaza 4 bytes
-
-    fread(&h->comienzoImagen, 4, 1, pf);
-    printf("Comienzo de imagen: %d \n", h->comienzoImagen);
-
-    fread(&h->tamEncabezado, 4, 1, pf);
-    printf("Anchura de la cabecera del bitmap: %d \n", h->tamEncabezado);
-
-    fread(&h->ancho, 4, 1, pf);
-    printf("Anchura de la imagen: %d \n", h->ancho);
-
-    fread(&h->alto, 4, 1, pf);
-    printf("Altura de la imagen: %d \n", h->alto);
-
-    fseek(pf, 28, SEEK_CUR); //datos anteriores a los pixeles, revisar cuales sirven
-
-  return true;
-}
-
-void generadorManager(t_parametrosConsola* param, t_metadata*heder, FILE* img)
-{
-  int i;
-  int indiceAccion;
-
-  for(i=0; i < param->cantComandos; i++)
-  {
-    indiceAccion = accionIndexOf(param->comandos[i]);
-    vectorAccion[indiceAccion](heder, img);
-  }
+    if(error)
+        return error;
+    return TODO_OK;
 }
 
 int accionIndexOf(char* comando)
 {
-  int indice;
-
-  for(indice=0; indice<CANTIDAD_COMANDOS; indice++)
-  {
-    if( strcmp(comando,comandosValidos[indice])== 0)
-      return indice;
-  }
-
-  return -1;
+    int indice;
+    for(indice=0; indice < CANTIDAD_COMANDOS; indice++)
+    {
+        if(strcmp(comando,comandosValidos[indice])== 0)
+            return indice;
+    }
+    return -1;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-//              funciones para modularizar (dividir) codigo
+/// 	generadores de archivo transformado
 ////////////////////////////////////////////////////////////////////////////////
-void reescribirHeader(FILE* img, FILE* newImg)
+int negativo(t_metadata* heder, FILE* img)
 {
-    unsigned int aux, i = 0;
-    fseek(img, 0, SEEK_SET); //reinicio a la posicion 0 de la imagen
+    logString("\n Negativo ejecutando...");
 
-    //copiar header
-    while(i < CANT_BYTES_BITMAP_HEADER + 1) {
-        fread(&aux, sizeof(aux), 1, img);
-        fwrite(&aux, sizeof(aux), 1, newImg);
-        i++;
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_negativo.bmp","w+b");
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo 'estudiante_negativo.bmp'");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
     }
-}
 
-void aumentarTonalidad(FILE* img, FILE* newImg, char color[4])
-{
+    copiarHeder(heder,img,imgGenerada);
+
     t_pixel pixel;
 
-    while(!feof(img)) {
-        fread(&pixel.pixel, 3, 1, img);
+    while(fread(&pixel,PIXEL_24,1l,img)>0)
+    {
+        pixel.pixel[RED] = ~pixel.pixel[RED];
+        pixel.pixel[GREEN] = ~pixel.pixel[GREEN];
+        pixel.pixel[BLUE] = ~pixel.pixel[BLUE];
 
-        if(!strcmp(color, "blue"))
-            pixel.pixel[0] = (pixel.pixel[0] + (pixel.pixel[0] >> 1)) > 255 ? 255 : (pixel.pixel[0] + (pixel.pixel[0] >> 1)); //blue
-        else if(!strcmp(color, "green"))
-            pixel.pixel[1] = (pixel.pixel[1] + (pixel.pixel[1] >> 1)) > 255 ? 255 : (pixel.pixel[1] + (pixel.pixel[1] >> 1)); //green
-        else if(!strcmp(color, "red"))
-            pixel.pixel[2] = (pixel.pixel[2] + (pixel.pixel[2] >> 1)) > 255 ? 255 : (pixel.pixel[2] + (pixel.pixel[2] >> 1)); //red
-
-        fwrite(&pixel.pixel, 3, 1, newImg);
+        fwrite(&pixel,PIXEL_24,1l,imgGenerada);
     }
+    fclose(imgGenerada);
+
+    logString(" Negativo finalizado.\n ");
+    return TODO_OK;
+}
+////////////////////////////////////////////////////////////////////////////////
+int escalaDeGrises(t_metadata* heder, FILE* img)
+{
+    logString("\n Escala de grises ejecutando...");
+
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_escala-de-grises.bmp","w+b");
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo estudiante_escala-de-grises.bmp");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
+    }
+
+    copiarHeder(heder,img,imgGenerada);
+
+    t_pixel pixel;
+    unsigned int promedioPixel ;
+
+    while(fread(&pixel,PIXEL_24,1l,img)>0)
+    {
+        promedioPixel =
+            (pixel.pixel[RED]+pixel.pixel[GREEN]+pixel.pixel[BLUE]) / 3;////////////////////////////////////////////////
+
+        pixel.pixel[RED] = (unsigned char)promedioPixel;
+        pixel.pixel[GREEN] = (unsigned char)promedioPixel;
+        pixel.pixel[BLUE] = (unsigned char)promedioPixel;
+
+        fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
+    }
+    fclose(imgGenerada);
+
+    logString(" Escala de grises finalizado.\n ");
+    return TODO_OK;
+}
+////////////////////////////////////////////////////////////////////////////////
+unsigned char incrementoPixelAl25(unsigned char pixel)
+{
+    unsigned int incrementoPixel = pixel + (pixel >> 2);
+    return  incrementoPixel < 256 ? incrementoPixel : 255;
+}
+
+int aumentarContraste(t_metadata* heder, FILE* img)
+{
+    logString("\n Aumentar contraste ejecutando...");
+
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_aumentar-contraste.bmp","w+b");
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo estudiante_aumentar-contraste.");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
+    }
+
+    copiarHeder(heder,img,imgGenerada);
+
+    t_pixel pixel;
+    unsigned int condicion;
+
+    while(fread(&pixel,PIXEL_24,1l,img)>0)
+    {
+        condicion = (pixel.pixel[RED] + pixel.pixel[GREEN] + pixel.pixel[BLUE] / 3) > 127;
+
+        if(condicion)
+        {
+            pixel.pixel[RED] = incrementoPixelAl25(pixel.pixel[RED]);
+            pixel.pixel[GREEN] = incrementoPixelAl25(pixel.pixel[GREEN]);
+            pixel.pixel[BLUE] = incrementoPixelAl25(pixel.pixel[BLUE]);
+        }
+        else
+        {
+            pixel.pixel[RED] = pixel.pixel[RED] - (pixel.pixel[RED] >> 2);
+            pixel.pixel[GREEN] = pixel.pixel[GREEN] - (pixel.pixel[GREEN] >> 2);
+            pixel.pixel[BLUE] = pixel.pixel[BLUE] - (pixel.pixel[BLUE] >> 2);
+        }
+
+        fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
+    }
+    fclose(imgGenerada);
+
+    logString(" Aumentar contraste finalizada.\n");
+    return TODO_OK;
+}
+////////////////////////////////////////////////////////////////////////////////
+int reducirContraste(t_metadata* heder, FILE* img)
+{
+    logString("\n Reducir contraste ejecutando...");
+
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_reducir-contraste.bmp","w+b");
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo estudiante_reducir-contraste.");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
+    }
+
+    copiarHeder(heder,img,imgGenerada);
+
+    t_pixel pixel;
+    unsigned int condicion;
+
+    while(fread(&pixel,PIXEL_24,1l,img) > 0)
+    {
+        condicion = (pixel.pixel[RED] + pixel.pixel[GREEN] + pixel.pixel[BLUE] / 3) > 127;
+
+        if(!condicion)
+        {
+            pixel.pixel[RED] = incrementoPixelAl25(pixel.pixel[RED]);
+            pixel.pixel[GREEN] = incrementoPixelAl25(pixel.pixel[GREEN]);
+            pixel.pixel[BLUE] = incrementoPixelAl25(pixel.pixel[BLUE]);
+        }
+        else
+        {
+            pixel.pixel[RED] = pixel.pixel[RED] - (pixel.pixel[RED] >> 2);
+            pixel.pixel[GREEN] = pixel.pixel[GREEN] - (pixel.pixel[GREEN] >> 2);
+            pixel.pixel[BLUE] = pixel.pixel[BLUE] - (pixel.pixel[BLUE] >> 2);
+        }
+
+        fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
+    }
+
+    fclose(imgGenerada);
+
+    logString(" Reducir contraste finalizado.\n");
+    return TODO_OK;
+}
+////////////////////////////////////////////////////////////////////////////////
+int tonalidadAzul(t_metadata* heder, FILE* img)
+{
+    logString("\n Tonalidad azul ejecutando.");
+
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_tonalidad-azul.bmp","w+b");
+
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo estudiante_tonalidad-azul.");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
+    }
+
+    copiarHeder(heder,img,imgGenerada);
+
+    t_pixel pixel;
+
+    while(fread(&pixel, PIXEL_24, 1l, img) > 0)
+    {
+        pixel.pixel[BLUE] = duplicarValorColor(pixel.pixel[BLUE]);
+        fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
+    }
+    fclose(imgGenerada);
+
+    logString(" Tonalidad azul finalizado.\n");
+    return TODO_OK;
+}
+
+int tonalidadRojo(t_metadata* heder, FILE* img)
+{
+    logString("\n Tonalidad rojo ejecutando...");
+
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_tonalidad-rojo.bmp","w+b");
+
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo estudiante_tonalidad-rojo.");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
+    }
+
+    copiarHeder(heder,img, imgGenerada);
+
+    t_pixel pixel;
+
+    while(fread(&pixel, PIXEL_24, 1l, img)>0)
+    {
+        pixel.pixel[RED] = duplicarValorColor(pixel.pixel[RED]);
+
+        fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
+    }
+    fclose(imgGenerada);
+
+    logString(" Tonalidad rojo finalizado.\n");
+    return TODO_OK;
+}
+
+int tonalidadVerde(t_metadata* heder, FILE* img)
+{
+    logString("\n Tonalidad verde ejecutando...");
+
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_tonalidad-verde.bmp","w+b");
+
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo estudiante_tonalidad-verde.bmp");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
+    }
+
+    copiarHeder(heder,img, imgGenerada);
+
+    t_pixel pixel;
+
+    while(fread(&pixel, PIXEL_24, 1l, img) > 0)
+    {
+        pixel.pixel[GREEN] = duplicarValorColor(pixel.pixel[GREEN]);
+        fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
+    }
+    fclose(imgGenerada);
+
+    logString(" Tonalidad verde finalizado.\n");
+    return TODO_OK;
+}
+
+unsigned char duplicarValorColor(unsigned char color)
+{
+    unsigned int colorDuplicado = color << 1 ;
+    return colorDuplicado < 255 ? (unsigned char)colorDuplicado : 255;
+}
+////////////////////////////////////////////////////////////////////////////////
+int recortar(t_metadata* heder, FILE* img)
+{
+    logString("\n Recortar ejecutando...");
+
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_recortar.bmp","w+b");
+
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo estudiante_recortar.bmp");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
+    }
+
+    copiarHeder(heder,img, imgGenerada);
+
+    unsigned int countPixelX = 1;
+    unsigned int countFilaY = 1;
+    unsigned int maxEjeX = heder->ancho >> 1;
+    unsigned int maxEjeY = heder->alto >> 1;
+
+    t_pixel pixel;
+    t_pixel pixelBlanco;
+    pixelBlanco.pixel[0]=0xff;
+    pixelBlanco.pixel[1]=0xff;
+    pixelBlanco.pixel[2]=0xff;
+
+    while(fread(&pixel, PIXEL_24, 1l, img) > 0)
+    {
+        if(countPixelX > maxEjeX ||  countFilaY < maxEjeY)
+        {
+            if(countPixelX == heder->ancho )
+            {
+                countPixelX = 0;
+                countFilaY++;
+            }
+            fwrite(&pixelBlanco, PIXEL_24, 1l, imgGenerada);
+        }
+        else
+        {
+            fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
+        }
+        countPixelX++;
+    }
+
+    //fseek(img, 0l, SEEK_SET) ;
+    //fseek(imgGenerada, 18l, SEEK_SET) ;
+    //fwrite(&maxEjeX, 4l, 1l, imgGenerada);
+    //fwrite(&maxEjeY, 4l, 1l, imgGenerada);
+
+    fclose(imgGenerada);
+    logString(" Recortar finalizado.\n");
+    return TODO_OK;
+}
+////////////////////////////////////////////////////////////////////////////////
+long int calculoOffsetRotarDerecha(int fila, int columna, int alto, int ancho)
+{
+    int newFila = ancho - 1 - columna;
+    int newColumna = fila;
+    int offset = newFila * alto + newColumna;
+
+    return offset;
+}
+
+int rotarDerecha(t_metadata* heder, FILE* img)
+{
+    logString("\n Rotar derecha ejecutando...");
+
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_rotar-derecha.bmp","w+b");
+
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo estudiante_rotar-derecha.bmp");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
+    }
+
+    copiarHeder(heder, img, imgGenerada);
+
+    int fila = 0;
+    int columna = 0;
+    long int offset;
+
+    t_pixel pixel;
+
+    while(fread(&pixel,PIXEL_24,1,img) > 0)
+    {
+        offset = calculoOffsetRotarDerecha(fila,columna,heder->alto,heder->ancho);
+        fseek(imgGenerada, offset*3 + heder->comienzoImagen, SEEK_SET);
+        fwrite(&pixel,PIXEL_24,1,imgGenerada);
+
+        columna++;
+        if(columna == heder->ancho)
+        {
+            fila++;
+            columna = 0;
+        }
+    }
+
+    fseek(imgGenerada, 18l, SEEK_SET) ;
+    fwrite(&heder->alto, 4l, 1l, imgGenerada);
+    fwrite(&heder->ancho, 4l, 1l, imgGenerada);
+
+    fclose(imgGenerada);
+
+    logString(" Rotar derecha finalizado.\n");
+    return TODO_OK;
+}
+////////////////////////////////////////////////////////////////////////////////
+long int calculoOffsetRotarIzquierda(int fila, int columna, int alto, int ancho)
+{
+    int newFila = columna;
+    int newColumna = alto - (fila+1);
+    int offset = newFila * alto + newColumna;
+
+    return offset;
+}
+
+int rotarIzquierda(t_metadata* heder, FILE* img)
+{
+    logString("\n Rotar izquierda ejecutando...");
+
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_rotar-izquierda.bmp","w+b");
+
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo estudiante_rotar-izquierda.bmp");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
+    }
+
+    copiarHeder(heder, img, imgGenerada);
+
+    int fila = 0;
+    int columna = 0;
+
+    long int offset;
+
+    t_pixel pixel;
+
+    while(fread(&pixel,PIXEL_24,1,img) > 0)
+    {
+        offset = calculoOffsetRotarIzquierda(fila,columna,heder->alto,heder->ancho);
+
+        fseek(imgGenerada, offset*PIXEL_24 + heder->comienzoImagen, SEEK_SET);
+
+        fwrite(&pixel,PIXEL_24,1,imgGenerada);
+
+        columna++;
+        if(columna == heder->ancho)
+        {
+            fila++;
+            columna=0;
+        }
+    }
+
+    fseek(imgGenerada, 18l, SEEK_SET) ;
+    fwrite(&heder->alto, 4l, 1l, imgGenerada);
+    fwrite(&heder->ancho, 4l, 1l, imgGenerada);
+
+    fclose(imgGenerada);
+    logString(" Rotar izquierda finalizado.\n");
+    return TODO_OK;
+}
+////////////////////////////////////////////////////////////////////////////////
+int comodin(t_metadata* heder, FILE* img)
+{
+    logString("\n Comodin Ejecutando...\n Tonalidad sepia...");
+
+    FILE* imgGenerada;
+    imgGenerada = fopen("estudiante_comodin.bmp","w+b");
+
+    if(!imgGenerada)
+    {
+        logString("Error creando archivo nuevo estudiante_comodin.bmp");
+        return NO_SE_PUEDE_CREAR_ARCHIVO;
+    }
+
+    copiarHeder(heder,img, imgGenerada);
+
+    t_pixel pixel;
+    //Sepia rojo = 0.393 x Original rojo + 0.769 x Original verde + 0.189 x Original azul
+    //Sepia verde = 0.349 x Original rojo + 0.686 x Original verde + 0.168 x Original azul
+    //Sepia azul = 0.272 x Original rojo + 0.534 x Original verde + 0.131 x Original azul
+
+    while(fread(&pixel, PIXEL_24, 1l, img) > 0)
+    {
+        pixel.pixel[BLUE] = (pixel.pixel[RED] * 0.272 + pixel.pixel[GREEN] * 0.534 + pixel.pixel[BLUE] * 0.131) > 255 ? 255 : (pixel.pixel[RED] * 0.272 + pixel.pixel[GREEN] * 0.534 + pixel.pixel[BLUE] * 0.131);
+        pixel.pixel[GREEN] = (pixel.pixel[RED] * 0.349 + pixel.pixel[GREEN] * 0.686 + pixel.pixel[BLUE] * 0.168) > 255 ? 255 : (pixel.pixel[RED] * 0.349 + pixel.pixel[GREEN] * 0.686 + pixel.pixel[BLUE] * 0.168);
+        pixel.pixel[RED] = (pixel.pixel[RED] * 0.393 + pixel.pixel[GREEN] * 0.769 + pixel.pixel[BLUE] * 0.189) > 255 ? 255 : (pixel.pixel[RED] * 0.393 + pixel.pixel[GREEN] * 0.769 + pixel.pixel[BLUE] * 0.189);
+
+        fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
+    }
+    fclose(imgGenerada);
+
+    logString(" Comodin finalizado.\n");
+    return TODO_OK;
+}
+////////////////////////////////////////////////////////////////////////////////
+
+/* compartidas */
+void copiarHeder(t_metadata* heder,FILE* img, FILE* newImg)
+{
+    char buffer[TAM_MAXIMO_HEDER_BMP];
+    fseek(img, INICIO_ARCHIVO, SEEK_SET) ;
+    fread(buffer, heder->comienzoImagen, 1l, img);
+    fwrite(buffer, heder->comienzoImagen, 1l, newImg);
+}
+// fin
+
+
+/// UTILITARIAS
+////////////////////////////////////////////////////////////////////////////////
+//                                log Print
+////////////////////////////////////////////////////////////////////////////////
+void logString(const char* msj)
+{
+    if(LOG) printf("%s\n", msj);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//                                log
+//                                auxiliares test
 ////////////////////////////////////////////////////////////////////////////////
-void consoleLog(const char* msj)
+void mostrarHeder(t_metadata* heder);
+void mostrarHeder(t_metadata* heder)
 {
-	printf("%s\n", msj);
-};
+    if(!LOG) return;
+    printf("Tamaño archivo: %d \n", heder->tamArchivo);
+    printf("Tamaño encabecera: %d\n", heder->tamEncabezado);
+    printf("Comienso imagen: %d\n", heder->comienzoImagen);
+    printf("Alto: %d\n", heder->alto);
+    printf("Ancho: %d\n", heder->ancho);
+    printf("Profundidad: %d\n", heder->profundidad);
+
+}
+
+/*
+
+unlam.bmp  --negativo --tonalidad-roja  --escala-de-grises --tonalidad-verde  pepito.Bmp --tonalidad-azul --reducir-contraste  --help  --aumentar-contraste --recortar --rotar-derecha --rotar-izquierda --comodin
+*/
+
 

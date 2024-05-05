@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--docente  /home/ezequiel/unlam.bmp --negativo --escala-de-grises" />
+				<Option parameters="--docente  unlam.bmp --negativo --tonalidad-roja  --escala-de-grises --tonalidad-verde  pepito.Bmp --tonalidad-azul --reducir-contraste  --help  --aumentar-contraste --recortar --rotar-derecha --rotar-izquierda --comodin" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
