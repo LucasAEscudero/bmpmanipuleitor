@@ -1,27 +1,3 @@
-/*
-    Integrantes del grupo. En caso de ser un grupo de dos integrantes, no completar el último campo.
-    Si alguno de los integrantes del grupo dejara la materia, completar de todos modos sus datos, aclarando que no entrega.
-    -----------------
-    Apellido:
-    Nombre:
-    DNI:
-    Entrega:
-    -----------------
-    Apellido:
-    Nombre:
-    DNI:
-    Entrega:
-    -----------------
-    (Sólo para grupos de tres integrantes)
-    Apellido:
-    Nombre:
-    DNI:
-    Entrega:
-    -----------------
-
-    Comentarios (opcionales) que deseen hacer al docente sobre el TP:
-
-*/
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
@@ -35,13 +11,11 @@
 #define GREEN 1
 #define BLUE 0
 
-#define LOG 1
+#define LOG 0
 
-/*
-#define TODO_OK 0
-#define ARCHIVO_NO_ENCONTRADO 10
-#define NO_SE_PUEDE_CREAR_ARCHIVO 20
-*/
+//#define TODO_OK 0
+//#define ARCHIVO_NO_ENCONTRADO 10
+//#define NO_SE_PUEDE_CREAR_ARCHIVO 20
 
 #define SIN_NOMBRE_DE_ARCHIVO 30
 #define SIN_COMANDOS 40
@@ -68,6 +42,7 @@ const char comandosValidos[CANTIDAD_COMANDOS][TAMANIO_MAXIMO_COMANDO] =
     ROTAR_DERECHA,
     ROTAR_IZQUIERDA,
     COMODIN
+
 };
 
 
@@ -93,6 +68,7 @@ Accion vectorAccion[CANTIDAD_COMANDOS] =
 
 int solucion(int argc, char* argv[])
 {
+
     t_parametrosConsola param;
 
     extraerParametrosConsola(argc,argv,&param);
@@ -104,12 +80,14 @@ int solucion(int argc, char* argv[])
         mostrarErrores(&param);
 
     if(param.sinNombreDeArchivo)
-        return SIN_NOMBRE_DE_ARCHIVO ;
+        return SIN_NOMBRE_DE_ARCHIVO;
 
     if(param.cantComandos == 0)
-        return SIN_COMANDOS ;
+        return SIN_COMANDOS;
+
 
     return procesarImagen(&param);
+
 }
 
 void mostrarErrores(t_parametrosConsola* param)
@@ -153,26 +131,29 @@ t_parametrosConsola* extraerParametrosConsola(
 
     for(i = 1; i < argc; i++)
     {
-        if(!parametros->esHelp && strcmp(HELP,argv[i]) == 0)
+        if( !parametros->esHelp
+            && strcmp(HELP,argv[i]) == 0)
         {
             parametros->esHelp = true;
             continue;
         }
 
-        if( parametros->sinNombreDeArchivo && esNombreArchivoValido(argv[i]))
+        if( parametros->sinNombreDeArchivo
+            && esNombreArchivoValido(argv[i]))
         {
             parametros->nombreArchivo[0] = argv[i];
             parametros->sinNombreDeArchivo = false;
             continue;
         }
 
-        if( parametros->cantComandos < CANTIDAD_COMANDOS && esComandoValido(argv[i]))
+        if( parametros->cantComandos < CANTIDAD_COMANDOS
+            && esComandoValido(argv[i]))
         {
             parametros->comandos[parametros->cantComandos] = argv[i];
             parametros->cantComandos++;
             continue;
         }
-        if( parametros->cantErrores < MAX_ERRORES_GUARDADOS)
+        if( parametros->cantErrores < MAX_ERRORES_GUARDADOS )
         {
             parametros->errores[parametros->cantErrores] = argv[i];
             parametros->cantErrores++;
@@ -184,10 +165,11 @@ t_parametrosConsola* extraerParametrosConsola(
 
 int esComandoValido(char* comando)
 {
+
     int i;
     for(i=0; i<CANTIDAD_COMANDOS; i++)
     {
-        if(strcmp(comando,comandosValidos[i])== 0)
+        if( strcmp(comando,comandosValidos[i])== 0)
             return true;
     }
     return false;
@@ -197,7 +179,7 @@ int esNombreArchivoValido(char* nombre)
 {
     int len = strlen(nombre);
 
-    return strlen(nombre) > 4 &&
+    return len > 4 &&
            nombre[len-1] == 'p' &&
            nombre[len-2] == 'm' &&
            nombre[len-3] == 'b' &&
@@ -206,68 +188,6 @@ int esNombreArchivoValido(char* nombre)
 
 /** CONTROLADOR **/
 
-////////////////////////////////////////////////////////////////////////////////
-///       Servicio validacion formato del archivo y extraccion de metadata
-////////////////////////////////////////////////////////////////////////////////
-int esTipoArchivoBMP(FILE* img)
-{
-    assert(img);
-
-    char tipo[2];
-    fseek(img,0l,SEEK_SET);
-    fread(tipo,2l,1,img);
-
-    return tipo[0] =='B' && tipo[1] =='M';
-}
-
-int extraerHeder(t_metadata* heder,FILE* img)
-{
-    assert(img && heder);
-    logString(" Extrayendo cebacera... \n");
-
-    fseek(img, 0l, SEEK_END);
-    if( ftell(img) < TAM_MAXIMO_HEDER_BMP)
-        return false;
-
-    // tipo 2 byts
-    fseek(img,2l,SEEK_SET);
-    // tamaño archivo
-    fread(&heder->tamArchivo,sizeof(int),1l,img);
-    // reservado
-    fseek(img,sizeof(int),SEEK_CUR);
-    // inicio datos imagen
-    fread(&heder->comienzoImagen,sizeof(int),1l,img);
-    // tamaño cabecera bitmap
-    fread(&heder->tamEncabezado,sizeof(int),1l,img);
-    // anchura
-    fread(&heder->ancho,sizeof(int),1l,img);
-    // altura
-    fread(&heder->alto,sizeof(int),1l,img);
-    // numero de planos
-    fread(&heder->profundidad,sizeof(short),1l,img);
-
-    //mostrarHeder(heder);
-    return true;
-}
-
-int esTamnioPixel24bist(t_metadata* heder, FILE* img)
-{
-    assert(img && heder);
-
-    fseek(img,heder->comienzoImagen,SEEK_SET);
-
-    unsigned long bytesInicioImg = ftell(img);
-
-    fseek(img,0l,SEEK_END);
-
-    unsigned long bytesArchivo = ftell(img);
-
-
-    int esTamanioCorrecto =
-        bytesArchivo - bytesInicioImg == heder->alto * heder->ancho * PIXEL_24;
-
-    return esTamanioCorrecto;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 ///            Controlador del proceso de generacion de imagenes
@@ -304,22 +224,23 @@ int procesarImagen(t_parametrosConsola* param)
         return  FORMATO_DE_ARCHIVO_INVALIDO; // ERROR_TIPO_ARCHIVO
     }
 
-    int erroresALGenerarArchivos = generadorManager(param,&heder,img);
+    int erroresAlGenerarArchivos = generadorManager(param,&heder,img);
 
     fclose(img);
 
     logString("\nFin proceso.");
 
-    return !erroresALGenerarArchivos ? TODO_OK : erroresALGenerarArchivos;
+    return !erroresAlGenerarArchivos ? TODO_OK : erroresAlGenerarArchivos;
+
 }
 
 /// generador de archivos tranformados
 int generadorManager(t_parametrosConsola* param, t_metadata*heder, FILE* img)
 {
+
     int i;
     int indiceAccion;
     int error = 0;
-
     for(i=0; i<param->cantComandos; i++)
     {
         indiceAccion = accionIndexOf(param->comandos[i]);
@@ -328,26 +249,91 @@ int generadorManager(t_parametrosConsola* param, t_metadata*heder, FILE* img)
         else
             logString("no existe accion para este comando.");
     }
-
     if(error)
         return error;
     return TODO_OK;
 }
+
 
 int accionIndexOf(char* comando)
 {
     int indice;
     for(indice=0; indice < CANTIDAD_COMANDOS; indice++)
     {
-        if(strcmp(comando,comandosValidos[indice])== 0)
+        if( strcmp(comando,comandosValidos[indice])== 0)
             return indice;
     }
     return -1;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+///       Servicio validacion formato del archivo y extraccion de metadata
+////////////////////////////////////////////////////////////////////////////////
+
+int esTipoArchivoBMP(FILE* img)
+{
+    assert(img);
+
+    char tipo[2];
+    fseek(img,0l,SEEK_SET);
+    fread(tipo,2l,1,img);
+
+    return tipo[0] =='B' && tipo[1] =='M';
+}
+int extraerHeder(t_metadata* heder,FILE* img)
+{
+    assert(img && heder);
+    logString(" Extrayendo cebacera... \n");
+
+    fseek(img, 0l, SEEK_END);
+    if( ftell(img) < TAM_MAXIMO_HEDER_BMP)
+        return false;
+
+    // tipo 2 byts
+    fseek(img,2l,SEEK_SET);
+    // tamaï¿½o archivo
+    fread(&heder->tamArchivo,sizeof(int),1l,img);
+    // reservado
+    fseek(img,sizeof(int),SEEK_CUR);
+    // inicio datos imagen
+    fread(&heder->comienzoImagen,sizeof(int),1l,img);
+    // tamaï¿½o cabecera bitmap
+    fread(&heder->tamEncabezado,sizeof(int),1l,img);
+    // anchura
+    fread(&heder->ancho,sizeof(int),1l,img);
+    // altura
+    fread(&heder->alto,sizeof(int),1l,img);
+    // numero de planos
+    fread(&heder->profundidad,sizeof(short),1l,img);
+
+    //mostrarHeder(heder);
+    return true;
+}
+int esTamnioPixel24bist(t_metadata* heder, FILE* img)
+{
+    assert(img && heder);
+
+    fseek(img,heder->comienzoImagen,SEEK_SET);
+
+    unsigned long bytesInicioImg = ftell(img);
+
+    fseek(img,0l,SEEK_END);
+
+    unsigned long bytesArchivo = ftell(img);
+
+
+    int esTamanioCorrecto =
+        bytesArchivo - bytesInicioImg == heder->alto * heder->ancho * PIXEL_24;
+
+    return esTamanioCorrecto;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// 	generadores de archivo transformado
 ////////////////////////////////////////////////////////////////////////////////
+
 int negativo(t_metadata* heder, FILE* img)
 {
     logString("\n Negativo ejecutando...");
@@ -356,7 +342,7 @@ int negativo(t_metadata* heder, FILE* img)
     imgGenerada = fopen("estudiante_negativo.bmp","w+b");
     if(!imgGenerada)
     {
-        logString("Error creando archivo nuevo 'estudiante_negativo.bmp'");
+        logString("Errorr creando archivo nuevo 'estudiante_negativo.bmp'");
         return NO_SE_PUEDE_CREAR_ARCHIVO;
     }
 
@@ -386,7 +372,7 @@ int escalaDeGrises(t_metadata* heder, FILE* img)
     imgGenerada = fopen("estudiante_escala-de-grises.bmp","w+b");
     if(!imgGenerada)
     {
-        logString("Error creando archivo nuevo estudiante_escala-de-grises.bmp");
+        logString("Errorr creando archivo nuevo estudiante_escala-de-grises.bmp");
         return NO_SE_PUEDE_CREAR_ARCHIVO;
     }
 
@@ -398,7 +384,7 @@ int escalaDeGrises(t_metadata* heder, FILE* img)
     while(fread(&pixel,PIXEL_24,1l,img)>0)
     {
         promedioPixel =
-            (pixel.pixel[RED]+pixel.pixel[GREEN]+pixel.pixel[BLUE]) / 3;////////////////////////////////////////////////
+            (pixel.pixel[RED]+pixel.pixel[GREEN]+pixel.pixel[BLUE]) / 3;
 
         pixel.pixel[RED] = (unsigned char)promedioPixel;
         pixel.pixel[GREEN] = (unsigned char)promedioPixel;
@@ -426,18 +412,20 @@ int aumentarContraste(t_metadata* heder, FILE* img)
     imgGenerada = fopen("estudiante_aumentar-contraste.bmp","w+b");
     if(!imgGenerada)
     {
-        logString("Error creando archivo nuevo estudiante_aumentar-contraste.");
+        logString("Errorr creando archivo nuevo.");
         return NO_SE_PUEDE_CREAR_ARCHIVO;
     }
 
     copiarHeder(heder,img,imgGenerada);
 
     t_pixel pixel;
-    unsigned int condicion;
+
+   unsigned int condicion;
 
     while(fread(&pixel,PIXEL_24,1l,img)>0)
     {
-        condicion = (pixel.pixel[RED] + pixel.pixel[GREEN] + pixel.pixel[BLUE] / 3) > 127;
+        condicion =
+          (pixel.pixel[RED] + pixel.pixel[GREEN] + pixel.pixel[BLUE] / 3) > 127;
 
         if(condicion)
         {
@@ -468,7 +456,7 @@ int reducirContraste(t_metadata* heder, FILE* img)
     imgGenerada = fopen("estudiante_reducir-contraste.bmp","w+b");
     if(!imgGenerada)
     {
-        logString("Error creando archivo nuevo estudiante_reducir-contraste.");
+        logString("Errorr creando archivo nuevo.");
         return NO_SE_PUEDE_CREAR_ARCHIVO;
     }
 
@@ -477,7 +465,7 @@ int reducirContraste(t_metadata* heder, FILE* img)
     t_pixel pixel;
     unsigned int condicion;
 
-    while(fread(&pixel,PIXEL_24,1l,img) > 0)
+    while(fread(&pixel,PIXEL_24,1l,img)>0)
     {
         condicion = (pixel.pixel[RED] + pixel.pixel[GREEN] + pixel.pixel[BLUE] / 3) > 127;
 
@@ -509,10 +497,9 @@ int tonalidadAzul(t_metadata* heder, FILE* img)
 
     FILE* imgGenerada;
     imgGenerada = fopen("estudiante_tonalidad-azul.bmp","w+b");
-
     if(!imgGenerada)
     {
-        logString("Error creando archivo nuevo estudiante_tonalidad-azul.");
+        logString("Errorr creando archivo nuevo.");
         return NO_SE_PUEDE_CREAR_ARCHIVO;
     }
 
@@ -520,7 +507,7 @@ int tonalidadAzul(t_metadata* heder, FILE* img)
 
     t_pixel pixel;
 
-    while(fread(&pixel, PIXEL_24, 1l, img) > 0)
+    while(fread(&pixel, PIXEL_24, 1l, img)>0)
     {
         pixel.pixel[BLUE] = duplicarValorColor(pixel.pixel[BLUE]);
         fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
@@ -538,11 +525,9 @@ int tonalidadRojo(t_metadata* heder, FILE* img)
     FILE* imgGenerada;
     imgGenerada = fopen("estudiante_tonalidad-rojo.bmp","w+b");
 
+
     if(!imgGenerada)
-    {
-        logString("Error creando archivo nuevo estudiante_tonalidad-rojo.");
         return NO_SE_PUEDE_CREAR_ARCHIVO;
-    }
 
     copiarHeder(heder,img, imgGenerada);
 
@@ -566,10 +551,9 @@ int tonalidadVerde(t_metadata* heder, FILE* img)
 
     FILE* imgGenerada;
     imgGenerada = fopen("estudiante_tonalidad-verde.bmp","w+b");
-
     if(!imgGenerada)
     {
-        logString("Error creando archivo nuevo estudiante_tonalidad-verde.bmp");
+        logString("Errorr creando archivo nuevo estudiante_tonalidad-verde.bmp");
         return NO_SE_PUEDE_CREAR_ARCHIVO;
     }
 
@@ -577,7 +561,7 @@ int tonalidadVerde(t_metadata* heder, FILE* img)
 
     t_pixel pixel;
 
-    while(fread(&pixel, PIXEL_24, 1l, img) > 0)
+    while( fread(&pixel, PIXEL_24, 1l, img) > 0  )
     {
         pixel.pixel[GREEN] = duplicarValorColor(pixel.pixel[GREEN]);
         fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
@@ -592,6 +576,7 @@ unsigned char duplicarValorColor(unsigned char color)
 {
     unsigned int colorDuplicado = color << 1 ;
     return colorDuplicado < 255 ? (unsigned char)colorDuplicado : 255;
+
 }
 ////////////////////////////////////////////////////////////////////////////////
 int recortar(t_metadata* heder, FILE* img)
@@ -600,10 +585,9 @@ int recortar(t_metadata* heder, FILE* img)
 
     FILE* imgGenerada;
     imgGenerada = fopen("estudiante_recortar.bmp","w+b");
-
     if(!imgGenerada)
     {
-        logString("Error creando archivo nuevo estudiante_recortar.bmp");
+        logString("Errorr creando archivo nuevo estudiante_recortar.bmp");
         return NO_SE_PUEDE_CREAR_ARCHIVO;
     }
 
@@ -620,7 +604,7 @@ int recortar(t_metadata* heder, FILE* img)
     pixelBlanco.pixel[1]=0xff;
     pixelBlanco.pixel[2]=0xff;
 
-    while(fread(&pixel, PIXEL_24, 1l, img) > 0)
+    while( fread(&pixel, PIXEL_24, 1l, img)>0)
     {
         if(countPixelX > maxEjeX ||  countFilaY < maxEjeY)
         {
@@ -638,13 +622,13 @@ int recortar(t_metadata* heder, FILE* img)
         countPixelX++;
     }
 
-    //fseek(img, 0l, SEEK_SET) ;
-    //fseek(imgGenerada, 18l, SEEK_SET) ;
-    //fwrite(&maxEjeX, 4l, 1l, imgGenerada);
-    //fwrite(&maxEjeY, 4l, 1l, imgGenerada);
+//    fseek(img, 0l, SEEK_SET) ;
+//    fseek(imgGenerada, 18l, SEEK_SET) ;
+//    fwrite(&maxEjeX, 4l, 1l, imgGenerada);
+//    fwrite(&maxEjeY, 4l, 1l, imgGenerada);
 
     fclose(imgGenerada);
-    logString(" Recortar finalizado.\n");
+    logString("\n Recortar finalizado.\n");
     return TODO_OK;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -663,10 +647,9 @@ int rotarDerecha(t_metadata* heder, FILE* img)
 
     FILE* imgGenerada;
     imgGenerada = fopen("estudiante_rotar-derecha.bmp","w+b");
-
     if(!imgGenerada)
     {
-        logString("Error creando archivo nuevo estudiante_rotar-derecha.bmp");
+        logString("Errorr creando archivo nuevo estudiante_rotar-derecha.bmp");
         return NO_SE_PUEDE_CREAR_ARCHIVO;
     }
 
@@ -678,7 +661,7 @@ int rotarDerecha(t_metadata* heder, FILE* img)
 
     t_pixel pixel;
 
-    while(fread(&pixel,PIXEL_24,1,img) > 0)
+    while( fread(&pixel,PIXEL_24,1,img)>0)
     {
         offset = calculoOffsetRotarDerecha(fila,columna,heder->alto,heder->ancho);
         fseek(imgGenerada, offset*3 + heder->comienzoImagen, SEEK_SET);
@@ -691,6 +674,8 @@ int rotarDerecha(t_metadata* heder, FILE* img)
             columna = 0;
         }
     }
+
+
 
     fseek(imgGenerada, 18l, SEEK_SET) ;
     fwrite(&heder->alto, 4l, 1l, imgGenerada);
@@ -717,10 +702,9 @@ int rotarIzquierda(t_metadata* heder, FILE* img)
 
     FILE* imgGenerada;
     imgGenerada = fopen("estudiante_rotar-izquierda.bmp","w+b");
-
     if(!imgGenerada)
     {
-        logString("Error creando archivo nuevo estudiante_rotar-izquierda.bmp");
+        logString("Errorr creando archivo nuevo estudiante_rotar-izquierda.bmp");
         return NO_SE_PUEDE_CREAR_ARCHIVO;
     }
 
@@ -733,7 +717,7 @@ int rotarIzquierda(t_metadata* heder, FILE* img)
 
     t_pixel pixel;
 
-    while(fread(&pixel,PIXEL_24,1,img) > 0)
+    while(fread(&pixel,PIXEL_24,1,img)>0 )
     {
         offset = calculoOffsetRotarIzquierda(fila,columna,heder->alto,heder->ancho);
 
@@ -742,12 +726,13 @@ int rotarIzquierda(t_metadata* heder, FILE* img)
         fwrite(&pixel,PIXEL_24,1,imgGenerada);
 
         columna++;
-        if(columna == heder->ancho)
+        if( columna == heder->ancho)
         {
             fila++;
             columna=0;
         }
     }
+
 
     fseek(imgGenerada, 18l, SEEK_SET) ;
     fwrite(&heder->alto, 4l, 1l, imgGenerada);
@@ -758,6 +743,12 @@ int rotarIzquierda(t_metadata* heder, FILE* img)
     return TODO_OK;
 }
 ////////////////////////////////////////////////////////////////////////////////
+unsigned char validarRango(int n)
+{
+    return (n>255) ? 255 :(unsigned char) n;
+
+}
+
 int comodin(t_metadata* heder, FILE* img)
 {
     logString("\n Comodin Ejecutando...\n Tonalidad sepia...");
@@ -774,15 +765,29 @@ int comodin(t_metadata* heder, FILE* img)
     copiarHeder(heder,img, imgGenerada);
 
     t_pixel pixel;
-    //Sepia rojo = 0.393 x Original rojo + 0.769 x Original verde + 0.189 x Original azul
-    //Sepia verde = 0.349 x Original rojo + 0.686 x Original verde + 0.168 x Original azul
-    //Sepia azul = 0.272 x Original rojo + 0.534 x Original verde + 0.131 x Original azul
+    unsigned int sepiaRojo;
+    unsigned int sepiaAzul;
+    unsigned int sepiaVerde;
 
     while(fread(&pixel, PIXEL_24, 1l, img) > 0)
     {
-        pixel.pixel[BLUE] = (pixel.pixel[RED] * 0.272 + pixel.pixel[GREEN] * 0.534 + pixel.pixel[BLUE] * 0.131) > 255 ? 255 : (pixel.pixel[RED] * 0.272 + pixel.pixel[GREEN] * 0.534 + pixel.pixel[BLUE] * 0.131);
-        pixel.pixel[GREEN] = (pixel.pixel[RED] * 0.349 + pixel.pixel[GREEN] * 0.686 + pixel.pixel[BLUE] * 0.168) > 255 ? 255 : (pixel.pixel[RED] * 0.349 + pixel.pixel[GREEN] * 0.686 + pixel.pixel[BLUE] * 0.168);
-        pixel.pixel[RED] = (pixel.pixel[RED] * 0.393 + pixel.pixel[GREEN] * 0.769 + pixel.pixel[BLUE] * 0.189) > 255 ? 255 : (pixel.pixel[RED] * 0.393 + pixel.pixel[GREEN] * 0.769 + pixel.pixel[BLUE] * 0.189);
+        sepiaAzul = (pixel.pixel[RED] * 0.272 +
+                     pixel.pixel[GREEN] * 0.534 +
+                     pixel.pixel[BLUE] * 0.131);
+
+        pixel.pixel[BLUE] = sepiaAzul > 255 ? 255 : (unsigned char) sepiaAzul;
+
+        sepiaVerde = (pixel.pixel[RED] * 0.349 +
+                      pixel.pixel[GREEN] * 0.686 +
+                      pixel.pixel[BLUE] * 0.168);
+
+        pixel.pixel[GREEN] = sepiaVerde > 255 ? 255 :(unsigned char) sepiaVerde;
+
+        sepiaRojo = (pixel.pixel[RED] * 0.393 +
+                     pixel.pixel[GREEN] * 0.769 +
+                     pixel.pixel[BLUE] * 0.189);
+
+        pixel.pixel[RED] = sepiaRojo > 255 ? 255 :(unsigned char) sepiaRojo;
 
         fwrite(&pixel, PIXEL_24, 1l, imgGenerada);
     }
@@ -801,6 +806,8 @@ void copiarHeder(t_metadata* heder,FILE* img, FILE* newImg)
     fread(buffer, heder->comienzoImagen, 1l, img);
     fwrite(buffer, heder->comienzoImagen, 1l, newImg);
 }
+
+
 // fin
 
 
@@ -820,8 +827,8 @@ void mostrarHeder(t_metadata* heder);
 void mostrarHeder(t_metadata* heder)
 {
     if(!LOG) return;
-    printf("Tamaño archivo: %d \n", heder->tamArchivo);
-    printf("Tamaño encabecera: %d\n", heder->tamEncabezado);
+    printf("Tamaï¿½o archivo: %d \n", heder->tamArchivo);
+    printf("Tamaï¿½o encabecera: %d\n", heder->tamEncabezado);
     printf("Comienso imagen: %d\n", heder->comienzoImagen);
     printf("Alto: %d\n", heder->alto);
     printf("Ancho: %d\n", heder->ancho);
